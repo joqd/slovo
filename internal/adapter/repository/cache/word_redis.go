@@ -28,49 +28,78 @@ func NewWordCache(redis redisdb.Redis, xlog port.Logger) port.WordCache {
 }
 
 func (w *wordCache) Set(ctx context.Context, word *domain.Word) error {
-	key := fmt.Sprintf("word:%s", word.ID)
-
 	data, err := json.Marshal(word)
 	if err != nil {
 		w.xlog.Error("marshal word failed, word_id=%s, err=%v", word.ID, err)
 		return err
 	}
 
-	if _, err := w.rdb.Set(ctx, key, data, w.ttl).Result(); err != nil {
-		w.xlog.Error("redis set error, key=%s, err=%v", key, err)
-		return err
+	keys := []string{
+		fmt.Sprintf("word:%s", word.ID),
+		fmt.Sprintf("word:%s", word.Bare),
+	}
+
+	for _, key := range keys {
+		if _, err := w.rdb.Set(ctx, key, data, w.ttl).Result(); err != nil {
+			w.xlog.Error("redis set error, key=%s, err=%v", key, err)
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (w *wordCache) Get(ctx context.Context, id string) (*domain.Word, error) {
-	key := fmt.Sprintf("word:%s", id)
+func (w *wordCache) Get(ctx context.Context, key string) (*domain.Word, error) {
+	cacheKey := fmt.Sprintf("word:%s", key)
 
-	val, err := w.rdb.Get(ctx, key).Result()
+	val, err := w.rdb.Get(ctx, cacheKey).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, domain.ErrDataNotFound
 		}
 
-		w.xlog.Error("redis get error, key=%s, err=%v", key, err)
+		w.xlog.Error("redis get error, key=%s, err=%v", cacheKey, err)
 		return nil, err
 	}
 
 	var word domain.Word
 	if err := json.Unmarshal([]byte(val), &word); err != nil {
-		w.xlog.Error("unmarshal word failed, key=%s, er%v", key, err)
+		w.xlog.Error("unmarshal word failed, key=%s, err=%v", cacheKey, err)
 		return nil, err
 	}
 
 	return &word, nil
 }
 
-func (w *wordCache) Del(ctx context.Context, id string) error {
-	key := fmt.Sprintf("word:%s", id)
-	if err := w.rdb.Del(ctx, key).Err(); err != nil {
-		w.xlog.Error("redis delete error, key=%s, err=%v", key, err)
+func (w *wordCache) Del(ctx context.Context, key string) error {
+	cacheKey := fmt.Sprintf("word:%s", key)
+
+	word, err := w.Get(ctx, key)
+	if err != nil && err != domain.ErrDataNotFound {
+		w.xlog.Error("redis get error while deleting, key=%s, err=%v", cacheKey, err)
 		return err
 	}
+
+	if err == nil {
+		keys := []string{
+			fmt.Sprintf("word:%s", word.ID),
+			fmt.Sprintf("word:%s", word.Bare),
+		}
+
+		if err := w.rdb.Del(ctx, keys...).Err(); err != nil {
+			w.xlog.Error("redis delete error, keys=%v, err=%v", keys, err)
+			return err
+		}
+
+		return nil
+	}
+
+	if err := w.rdb.Del(ctx, cacheKey).Err(); err != nil {
+		if err != redis.Nil {
+			w.xlog.Error("redis delete fallback error, key=%s, err=%v", cacheKey, err)
+			return err
+		}
+	}
+
 	return nil
 }
