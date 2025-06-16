@@ -23,16 +23,20 @@ func NewWordUsecase(persistent port.WordPersistent, cache port.WordCache, xlog p
 
 func (w *wordUsecase) GetByID(ctx context.Context, id string) (*domain.Word, error) {
 	word, err := w.cache.Get(ctx, id)
-	if err == nil {
-		return word, nil
-	}
-
-	word, err = w.persistent.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		word, err = w.persistent.GetByID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := w.cache.Set(ctx, word); err != nil {
+			w.xlog.Warn("cache set failed, word_id=%s, err=%v", word.ID, err)
+		}
 	}
 
-	w.cache.Set(ctx, word)
+	if word.Disable {
+		return nil, domain.ErrDataNotFound
+	}
 
 	return word, nil
 }
@@ -44,15 +48,24 @@ func (w *wordUsecase) Create(ctx context.Context, word *domain.Word) (*domain.Wo
 	}
 
 	word.ID = oid
-	w.cache.Set(ctx, word)
+	if err := w.cache.Set(ctx, word); err != nil {
+		w.xlog.Warn("cache set failed, word_id=%s, err=%v", word.ID, err)
+	}
 
 	return word, nil
 }
 
 func (w *wordUsecase) GetByBare(ctx context.Context, bare string) (*domain.Word, error) {
-	word, err := w.persistent.GetByBare(ctx, bare)
+	word, err := w.cache.Get(ctx, bare)
 	if err != nil {
-		return nil, err
+		word, err = w.persistent.GetByBare(ctx, bare)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := w.cache.Set(ctx, word); err != nil {
+			w.xlog.Warn("cache set failed, word_id=%s, err=%v", word.ID, err)
+		}
 	}
 
 	if word.Disable {
@@ -68,7 +81,9 @@ func (w *wordUsecase) DeleteByID(ctx context.Context, id string) error {
 		return err
 	}
 
-	w.cache.Del(ctx, id)
+	if err := w.cache.Del(ctx, id); err != nil {
+		w.xlog.Warn("cache delete failed, id=%s, err=%v", id, err)
+	}
 
 	return nil
 }
@@ -77,6 +92,10 @@ func (w *wordUsecase) DeleteByBare(ctx context.Context, bare string) error {
 	err := w.persistent.DeleteByBare(ctx, bare)
 	if err != nil {
 		return err
+	}
+
+	if err := w.cache.Del(ctx, bare); err != nil {
+		w.xlog.Warn("cache delete failed, bare=%s, err=%v", bare, err)
 	}
 
 	return nil
