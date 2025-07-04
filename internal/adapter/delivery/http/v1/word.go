@@ -191,3 +191,45 @@ func (w *wordHandler) DeleteByBare(c *gin.Context) {
 	deletedWord := response.DeletedWord{Bare: bare}
 	response.SuccessResponse(c, http.StatusOK, deletedWord)
 }
+
+// @Summary      Update a word
+// @Description  Update a word with payload
+// @Tags         words
+// @Param        id       path      string			    true  "Word ID"
+// @Param        request  body      request.UpdateWord  true  "Word formation data"
+// @Success      200      {object}  wrapper.UpdatedWordWrapper
+// @Failure      400      {object}  wrapper.ErrorBadRequestWrapper
+// @Failure      404      {object}  wrapper.ErrorNotFoundWrapper
+// @Failure      422      {object}  wrapper.ErrorUnprocessableEntityWrapper
+// @Failure      500      {object}  wrapper.ErrorInternalServerWrapper
+// @Router       /api/v1/words/{id} [put]
+func (w *wordHandler) Update(c *gin.Context) {
+	id := c.Param("id")
+
+	var body request.UpdateWord
+	if err := c.ShouldBind(&body); err != nil {
+		response.ErrorResponse(c, http.StatusBadRequest, response.DescBadRequest)
+		return
+	}
+
+	if err := w.validator.Struct(body); err != nil {
+		response.ErrorResponse(c, http.StatusUnprocessableEntity, response.UnprocessableEntity)
+		return
+	}
+
+	word := mapper.UpdateWordToWord(&body)
+	word.ID = id
+
+	if err := w.usecase.Update(c.Request.Context(), word); err != nil {
+		if errors.Is(err, domain.ErrDataNotFound) {
+			response.ErrorResponse(c, http.StatusNotFound, response.DescDataNotFound)
+			return
+		}
+
+		response.ErrorResponse(c, http.StatusInternalServerError, response.DescInternalServerError)
+		return
+	}
+
+	retrievedWord := mapper.WordToRetrievedWord(word)
+	response.SuccessResponse(c, http.StatusOK, retrievedWord)
+}

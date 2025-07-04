@@ -35,6 +35,39 @@ definitions:
     - accented
     - bare
     type: object
+  request.UpdateWord:
+    properties:
+      accented:
+        example: весь
+        minLength: 1
+        type: string
+      bare:
+        example: весь
+        minLength: 1
+        type: string
+      disable:
+        example: false
+        type: boolean
+      level:
+        enum:
+        - A1
+        - A2
+        - B1
+        - B2
+        - C1
+        - C2
+        example: B1
+        type: string
+      type:
+        enum:
+        - adjective
+        - noun
+        - verb
+        - adverb
+        - other
+        example: noun
+        type: string
+    type: object
   response.DeletedWord:
     properties:
       _id:
@@ -131,6 +164,14 @@ definitions:
         type: boolean
     type: object
   wrapper.RetrievedWordWrapper:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      result:
+        $ref: '#/definitions/response.RetrievedWord'
+    type: object
+  wrapper.UpdatedWordWrapper:
     properties:
       ok:
         example: true
@@ -284,6 +325,44 @@ paths:
           schema:
             $ref: '#/definitions/wrapper.ErrorInternalServerWrapper'
       summary: Get a word by ID
+      tags:
+      - words
+    put:
+      description: Update a word with payload
+      parameters:
+      - description: Word ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Word formation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateWord'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wrapper.UpdatedWordWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.ErrorBadRequestWrapper'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/wrapper.ErrorNotFoundWrapper'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/wrapper.ErrorUnprocessableEntityWrapper'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.ErrorInternalServerWrapper'
+      summary: Update a word
       tags:
       - words
 schemes:

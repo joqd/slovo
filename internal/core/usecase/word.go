@@ -100,3 +100,15 @@ func (w *wordUsecase) DeleteByBare(ctx context.Context, bare string) error {
 
 	return nil
 }
+
+func (w *wordUsecase) Update(ctx context.Context, word *domain.Word) error {
+	if err := w.persistent.Update(ctx, word); err != nil {
+		return err
+	}
+
+	if err := w.cache.Set(ctx, word); err != nil {
+		w.xlog.Warn("cache set failed, word_id=%s, err=%v", word.ID, err)
+	}
+
+	return nil
+}
