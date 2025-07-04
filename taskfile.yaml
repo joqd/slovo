@@ -5,7 +5,7 @@ dotenv: ['.env']
 tasks:
   dev:
     desc: Run the app
-    # deps: [docs]
+    dir: .
     cmds:
       - go run ./cmd/app/main.go
     silent: true
