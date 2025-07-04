@@ -187,6 +187,63 @@
                     }
                 }
             },
+            "put": {
+                "description": "Update a word with payload",
+                "tags": [
+                    "words"
+                ],
+                "summary": "Update a word",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Word ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Word formation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateWord"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.UpdatedWordWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.ErrorBadRequestWrapper"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.ErrorNotFoundWrapper"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.ErrorUnprocessableEntityWrapper"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.ErrorInternalServerWrapper"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete a word from the database using its ID",
                 "tags": [
@@ -232,6 +289,48 @@
                 "accented",
                 "bare"
             ],
+            "properties": {
+                "accented": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "весь"
+                },
+                "bare": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "весь"
+                },
+                "disable": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "level": {
+                    "type": "string",
+                    "enum": [
+                        "A1",
+                        "A2",
+                        "B1",
+                        "B2",
+                        "C1",
+                        "C2"
+                    ],
+                    "example": "B1"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "adjective",
+                        "noun",
+                        "verb",
+                        "adverb",
+                        "other"
+                    ],
+                    "example": "noun"
+                }
+            }
+        },
+        "request.UpdateWord": {
+            "type": "object",
             "properties": {
                 "accented": {
                     "type": "string",
@@ -408,6 +507,18 @@
             }
         },
         "wrapper.RetrievedWordWrapper": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "result": {
+                    "$ref": "#/definitions/response.RetrievedWord"
+                }
+            }
+        },
+        "wrapper.UpdatedWordWrapper": {
             "type": "object",
             "properties": {
                 "ok": {

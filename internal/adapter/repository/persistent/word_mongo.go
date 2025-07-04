@@ -9,6 +9,7 @@ import (
 	"github.com/joqd/slovo/internal/core/port"
 	"github.com/joqd/slovo/pkg/mongodb"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -106,6 +107,41 @@ func (w *wordPersistent) DeleteByBare(ctx context.Context, bare string) error {
 	}
 
 	if result.DeletedCount == 0 {
+		return domain.ErrDataNotFound
+	}
+
+	return nil
+}
+
+func (w *wordPersistent) Update(ctx context.Context, word *domain.Word) error {
+	oid, err := primitive.ObjectIDFromHex(word.ID)
+	if err != nil {
+		w.xlog.Warn("failed to parse object_id: %s; err: %v", word.ID, err)
+		return domain.ErrInvalidObjectID
+	}
+
+	wordPayload := mapper.WordToWordPayload(word)
+
+	update := bson.M{
+		"$set": bson.M{
+			"bare":     wordPayload.Bare,
+			"accented": wordPayload.Accented,
+			"disable":  wordPayload.Disable,
+			"type":     wordPayload.Type,
+			"level":    wordPayload.Level,
+		},
+	}
+
+	filter := bson.M{"_id": oid}
+
+	result, err := w.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		w.xlog.Error("update mongo error, err=%v", err)
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		w.xlog.Warn("no document matched for update, id=%s", word.ID)
 		return domain.ErrDataNotFound
 	}
 

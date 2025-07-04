@@ -32,3 +32,18 @@ func CreateWordToWord(createWord *request.CreateWord) *domain.Word {
 
 	return word
 }
+
+func UpdateWordToWord(updateWord *request.UpdateWord) *domain.Word {
+	word := &domain.Word{
+		Bare:     *updateWord.Bare,
+		Accented: *updateWord.Accented,
+		Type:     updateWord.Type,
+		Level:    updateWord.Level,
+	}
+
+	if updateWord.Disable != nil {
+		word.Disable = *updateWord.Disable
+	}
+
+	return word
+}

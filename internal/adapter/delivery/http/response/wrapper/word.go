@@ -11,3 +11,8 @@ type DeletedWordWrapper struct {
 	Ok     bool                 `json:"ok" example:"true"`
 	Result response.DeletedWord `json:"result"`
 }
+
+type UpdatedWordWrapper struct {
+	Ok     bool                   `json:"ok" example:"true"`
+	Result response.RetrievedWord `json:"result"`
+}

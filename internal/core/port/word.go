@@ -11,6 +11,7 @@ type WordPersistent interface {
 	GetByBare(ctx context.Context, bare string) (*domain.Word, error)
 
 	Create(ctx context.Context, word *domain.Word) (id string, err error)
+	Update(ctx context.Context, word *domain.Word) error
 
 	DeleteByID(ctx context.Context, id string) error
 	DeleteByBare(ctx context.Context, bare string) error
@@ -27,6 +28,7 @@ type WordUsecase interface {
 	GetByBare(ctx context.Context, word string) (*domain.Word, error)
 
 	Create(ctx context.Context, word *domain.Word) (*domain.Word, error)
+	Update(ctx context.Context, word *domain.Word) error
 
 	DeleteByID(ctx context.Context, id string) error
 	DeleteByBare(ctx context.Context, bare string) error
