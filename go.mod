@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
+	github.com/gin-contrib/multitemplate v1.1.1
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/redis/go-redis/v9 v9.9.0
