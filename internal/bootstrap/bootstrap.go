@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/joqd/slovo/internal/adapter/config"
+	"github.com/joqd/slovo/internal/adapter/delivery/html"
 	"github.com/joqd/slovo/internal/adapter/delivery/http"
 	"github.com/joqd/slovo/internal/adapter/repository/cache"
 	"github.com/joqd/slovo/internal/adapter/repository/persistent"
@@ -36,22 +37,32 @@ func Run(conf *config.Config) {
 		xlog.Fatal("Failed to connect to Redis: %v", err)
 	}
 
-	// Initialize repositories
+	// Initialize Repositories
 	wordPersistentRepo := persistent.NewWordRespository(*mongoDB, xlog)
 	wordCacheRepo := cache.NewWordCache(*redisDB, xlog)
 
-	// Initialize usecases
+	// Initialize Usecases
 	wordUsecase := usecase.NewWordUsecase(wordPersistentRepo, wordCacheRepo, xlog)
 
-	// Initialize HTTP server and routes
+	// Initialize Server
 	server := httpserver.New()
-	routerOptions := http.RouterOptions{
+
+	// Initialize HTTP
+	httpOptions := http.Options{
 		Engine:      server.Engine,
 		Conf:        conf,
 		Log:         xlog,
 		WordUsecase: wordUsecase,
 	}
-	http.RegisterRoutes(routerOptions)
+	http.RegisterRoutes(httpOptions)
+
+	// Initialize HTML
+	htmlOptions := html.Options{
+		Engine: server.Engine,
+		Conf:   conf,
+		Log:    xlog,
+	}
+	html.RegisterRoutes(htmlOptions)
 
 	// Start HTTP server
 	server.Start()
