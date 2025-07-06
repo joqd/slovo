@@ -1,3 +1,1 @@
-<div class="text-xl">
-    Here i am.
-</div>
+<div class="iransans-regular">سلام به روی ماهت، به چشمون سیاهت</div>
