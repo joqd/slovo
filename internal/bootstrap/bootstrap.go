@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/joqd/slovo/internal/adapter/config"
-	"github.com/joqd/slovo/internal/adapter/delivery/html"
 	"github.com/joqd/slovo/internal/adapter/delivery/http"
 	"github.com/joqd/slovo/internal/adapter/repository/cache"
 	"github.com/joqd/slovo/internal/adapter/repository/persistent"
@@ -55,14 +54,6 @@ func Run(conf *config.Config) {
 		WordUsecase: wordUsecase,
 	}
 	http.RegisterRoutes(httpOptions)
-
-	// Initialize HTML
-	htmlOptions := html.Options{
-		Engine: server.Engine,
-		Conf:   conf,
-		Log:    xlog,
-	}
-	html.RegisterRoutes(htmlOptions)
 
 	// Start HTTP server
 	server.Start()
