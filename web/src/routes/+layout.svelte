@@ -1,21 +1,21 @@
 <script>
-    import Header from "$lib/components/header.svelte";
-    import Footer from "$lib/components/footer.svelte";
-    import { ModeWatcher } from "mode-watcher";
-    import "../app.css";
-
     let { children } = $props();
+
+    import "../styles/pico.min.css";
+    import "../styles/pico.colors.min.css";
+    import "../styles/general.css";
 </script>
 
-<div class="min-h-screen flex flex-col sohne" dir="rtl">
-    <ModeWatcher />
-    <Header />
+<div
+    class="vazirmatn min-h-screen bg-[url(/images/bg1.jpg)] bg-cover bg-center sm:pt-14 sm:pb-7 sm:px-1"
+>
+    <div class="container-fluid sm:min-h-full min-h-screen max-w-[960px] mx-auto rounded-[2px] py-[19px]">
+        <header></header>
 
-    <div class="mt-[100px] flex-1 relative">
-        <div class="max-w-[640px] mx-auto px-6 sm:px-0 min-h-full flex">
-            <div class="w-full">{@render children()}</div>
-        </div>
+        <main class="flex-grow">
+            {@render children()}
+        </main>
+
+        <footer></footer>
     </div>
-
-    <Footer />
 </div>
