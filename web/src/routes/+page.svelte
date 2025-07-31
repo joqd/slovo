@@ -80,7 +80,7 @@
             type="text"
             dir="auto"
             placeholder="Search..."
-            class="w-full rounded-md placeholder:text-primary placeholder:italic py-3 pl-16 pr-4 focus:outline-none transition focus:placeholder:opacity-50 placeholder:opacity-80 bg-secondary"
+            class="w-full rounded-md placeholder:text-primary placeholder:italic py-3 pl-16 pr-4 focus:outline-none transition focus:placeholder:opacity-50 placeholder:opacity-80 bg-neutral-100 dark:bg-neutral-900 border"
         />
     </div>
 </div>
