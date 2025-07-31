@@ -3,13 +3,6 @@ version: '3'
 dotenv: ['.env']
 
 tasks:
-  dev:
-    desc: Run the app
-    dir: .
-    cmds:
-      - go run ./cmd/app/main.go
-    silent: true
-
   fmt:
     desc: Format code using goimports
     cmds:
@@ -20,4 +13,26 @@ tasks:
     desc: Regenerate docs using swagger
     cmds:
       - swag init -g ./cmd/app/main.go -o cmd/docs
+    silent: true
+
+  backend:
+    desc: Run backend in dev mode
+    dir : ./cmd/app
+    cmds: 
+      - go run main.go
+    silent: true
+  
+  frontend:
+    desc: Run frontend in dev mode
+    dir: ./web
+    cmds:
+      - npm run dev
+    silent: true
+
+  dev:
+    desc: Run both backend and frontend concurrently in dev mode
+    deps:
+      - backend
+      - frontend
+    run: once
     silent: true
