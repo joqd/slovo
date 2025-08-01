@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/joqd/slovo/internal/adapter/config"
-	"github.com/joqd/slovo/internal/adapter/delivery/http"
+	"github.com/joqd/slovo/internal/adapter/controller/http"
 	"github.com/joqd/slovo/internal/adapter/repository/cache"
 	"github.com/joqd/slovo/internal/adapter/repository/persistent"
 	"github.com/joqd/slovo/internal/core/usecase"
